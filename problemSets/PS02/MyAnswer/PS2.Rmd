@@ -1,0 +1,82 @@
+=
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+1. Remember, we are interested in predicting the likelihood of an individual supporting
+a policy based on the number of countries participating and the possible sanctions for
+non-compliance.
+Fit an additive model. Provide the summary output, the global null hypothesis,
+and p-value. Please describe the results and provide a conclusion.
+
+##1. Fit an Additive Model
+```{r}
+# Load the data at first, and because of the data type, I use the load function
+load("climateSupport.RData")
+
+# Fit an additive model with the data I loaded
+model <- glm(choice ~ countries + sanctions, data = climateSupport, family = binomial())
+
+# Display the summary of the model to get the coefficients, global null hypothesis, and p-value
+summary(model)
+```
+
+##2. Analysis Based on the Model
+(a) Change in Odds for Increasing Sanctions
+You would extract the coefficients for sanctions from your model and calculate the odds ratio for the change from 5% to 15%.
+```{r}
+# I use a simple way to calculate for that instead of using some function because there are some system error in my Rstudio when I finish the homework
+
+# Calculate predicted probability for sanctions at 5%
+prob_5 <- predict(model, newdata = data.frame(countries = "160 of 192", sanctions = "5%"), type = "response")
+
+# Calculate predicted probability for sanctions at 15%
+prob_15 <- predict(model, newdata = data.frame(countries = "160 of 192", sanctions = "15%"), type = "response")
+
+# Calculate odds
+odds_5 <- prob_5 / (1 - prob_5)
+odds_15 <- prob_15 / (1 - prob_15)
+
+# Calculate odds ratio
+odds_ratio <- odds_15 / odds_5
+
+print(odds_ratio)
+```
+```{r}
+# Calculate the predicted probability of support with 5% sanctions under 20 of 192 country participation
+prob_5 <- predict(model, newdata = data.frame(countries = "20 of 192", sanctions = "5%"), type = "response")
+
+# Calculate the predicted probability of support with 15% sanctions under 20 of 192 country participation
+prob_15 <- predict(model, newdata = data.frame(countries = "20 of 192", sanctions = "15%"), type = "response")
+
+# Calculate odds for both levels of sanctions
+odds_5 <- prob_5 / (1 - prob_5)
+odds_15 <- prob_15 / (1 - prob_15)
+
+# Calculate odds ratio to assess the impact of increasing sanctions on the odds of supporting the policy
+odds_ratio <- odds_15 / odds_5
+
+# Print the odds ratio
+print(odds_ratio)
+```
+
+
+(b) Estimate Probability with Specific Conditions
+To estimate the probability, you'll use the model coefficients and apply them to the specific scenario.
+```{r}
+
+# Calculate estimated probability
+prob <- predict(model, newdata = data.frame(countries = "80 of 192", sanctions = "None"), type = "response")
+
+print(prob)
+```
+(c) Test for Interaction
+To test for interaction, you would fit another model including an interaction term and compare it with the original model.
+
+```{r}
+# Fit model with interaction
+model_interaction <- glm(choice ~ countries * sanctions, data = climateSupport, family = binomial())
+
+# Compare models
+anova(model, model_interaction, test = "Chisq")
+```
