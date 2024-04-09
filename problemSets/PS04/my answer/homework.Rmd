@@ -1,0 +1,111 @@
+---
+title: "Unveiling Historical Child Mortality Through Survival Analysis"
+output:
+  word_document: default
+  html_document: default
+  pdf_document: default
+date: "2024-04-06"
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE,warning = FALSE,message = FALSE)
+```
+
+## Introduction 
+
+Child mortality has been a longstanding concern in public health, reflecting the socio-economic and healthcare conditions of a society. Understanding the historical causes of child mortality is essential not only for shedding light on past societal conditions but also for informing contemporary efforts to improve child health outcomes. In this study, we delve into historical child mortality data from Skellefte, Sweden, spanning the years 1850 to 1884. Through rigorous survival analysis techniques, we aim to unravel the complex interplay of factors influencing child survival during this period.
+
+
+
+## Analysis
+
+
+In this study, we explore the historical determinants of child mortality using survival analysis techniques. We fit a Cox Proportional Hazard model to examine the effects of maternal age (`m.age`) and infant gender (`sex`) on the risk of child mortality. 
+
+
+```{r}
+# Load the required library
+library(eha)
+data(child)
+
+# Load the survival package
+library(survival)
+
+# Fit Cox Proportional Hazard model
+cox_model <- coxph(Surv(enter, exit, event) ~ m.age + sex, data = child)
+
+
+# Display summary of the Cox model
+summary(cox_model)
+```
+
+
+
+
+
+The analysis is based on data from 26,574 children born in Skellefte, Sweden, between 1850 and 1884. Our findings reveal that maternal age has a significant positive association with child mortality risk, with a hazard ratio of 1.0076 (95% CI: 1.003, 1.0119) for each one-unit increase in maternal age. Conversely, infant gender shows a modest but statistically significant effect, with females exhibiting a lower hazard of mortality compared to males (HR = 0.9211, 95% CI: 0.874, 0.9706). However, the overall concordance statistic indicates a moderate predictive accuracy of the model (c = 0.519), suggesting that other unexplored factors may also contribute to child mortality rates.
+
+
+
+
+
+```{r}
+
+# Plot survival curves by gender
+plot(survfit(cox_model, data = child), col = c("blue", "red"), lty = 1,
+     lwd = 2, main = "Survival Curves by Gender", xlab = "Time", 
+     ylab = "Survival Probability")
+legend("bottomright", legend = c("Male", "Female"), col = c("blue", "red"), lty = 1, lwd = 2)
+```
+
+ The survival curves plotted by gender illustrate that the survival probability stabilizes when the maternal age is increased by 0.8 units, with minimal differences observed between male and female infants. These findings underscore the complex interplay of maternal and demographic factors in shaping historical child mortality patterns.
+
+
+
+
+The forest plot presented here illustrates the hazard ratios estimated from the Cox Proportional Hazard model, examining the predictors of child mortality. The model was fitted using data from 26,574 children born, Sweden, between 1850 and 1884, with maternal age (`m.age`) and infant gender (`sex`) as covariates.
+
+```{r}
+
+# Plot forest plot for Cox regression model
+library(survminer) 
+ggforest(cox_model, child,
+         main = "Hazard ratio",
+         cpositions = c(0.02,-0.15, 0.25), 
+         fontsize = 0.8, #
+         refLabel = "reference",
+         noDigits = 2)
+```
+
+
+- Maternal Age (m.age):
+
+
+The hazard ratio for maternal age is estimated to be 1.0076 (95% CI: 1.003, 1.0119), indicating that for every one-unit increase in maternal age, the hazard of child mortality increases by approximately 0.76%.
+
+- Infant Gender (sex):
+
+The hazard ratio for female infants (compared to male infants) is estimated to be 0.9211 (95% CI: 0.874, 0.9706), suggesting a modest but statistically significant reduction in the hazard of mortality among female infants.
+
+
+```{r}
+# Check for the proportional hazards assumption
+cox.zph_result <- cox.zph(cox_model)
+cox.zph_result
+
+```
+
+The global chi-squared test statistic is 12.748 with 2 degrees of freedom, resulting in a p-value of 0.00171. This indicates a significant violation of the proportional hazards assumption for the overall model.
+
+
+## Conclusion
+
+In summary, the Cox Proportional Hazard model analysis of historical child mortality data from Skellefte, Sweden, has provided valuable insights into the factors influencing child survival during the 19th century. Maternal age emerged as a significant predictor, with each one-unit increase associated with a 0.76% increase in the hazard of child mortality. Additionally, infant gender showed a statistically significant effect, with female infants exhibiting a modest reduction in the hazard of mortality compared to males. However, the Cox proportional hazards assumption test revealed a violation of the assumption for infant gender, indicating that the hazard ratio may vary over time for different genders. This suggests the need for further exploration of time-varying effects and potential interactions in understanding the complex dynamics of historical child mortality. 
+
+
+
+
+
+
+ 
+
